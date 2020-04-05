@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+           xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://schemas.microsoft.com/ado/2007/06/edmx ">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="InfluxDBSchema" xmlns="http://schemas.microsoft.com/ado/2006/04/edm"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://schemas.microsoft.com/ado/2006/04/edm ">
+    <EntityContainer Name="InfluxDB" m:IsDefaultEntityContainer="true">
+    <EntitySet Name="monitoring__cpu" EntityType="InfluxDBSchema.monitoring__cpu"/>
+<EntitySet Name="monitoring__disk" EntityType="InfluxDBSchema.monitoring__disk"/>
+<EntitySet Name="monitoring__diskio" EntityType="InfluxDBSchema.monitoring__diskio"/>
+<EntitySet Name="monitoring__mem" EntityType="InfluxDBSchema.monitoring__mem"/>
+<EntitySet Name="monitoring__net" EntityType="InfluxDBSchema.monitoring__net"/>
+<EntitySet Name="monitoring__processes" EntityType="InfluxDBSchema.monitoring__processes"/>
+<EntitySet Name="monitoring__swap" EntityType="InfluxDBSchema.monitoring__swap"/>
+<EntitySet Name="monitoring__system" EntityType="InfluxDBSchema.monitoring__system"/>
+    </EntityContainer>
+    <EntityType Name="monitoring__cpu"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="usage_guest" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_guest_nice" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_idle" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_iowait" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_irq" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_nice" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_softirq" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_steal" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_system" Type="Edm.Double" Nullable="true" />
+<Property Name="usage_user" Type="Edm.Double" Nullable="true" />
+<Property Name="cpu" Type="Edm.String" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__disk"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="free" Type="Edm.Double" Nullable="true" />
+<Property Name="inodes_free" Type="Edm.Double" Nullable="true" />
+<Property Name="inodes_total" Type="Edm.Double" Nullable="true" />
+<Property Name="inodes_used" Type="Edm.Double" Nullable="true" />
+<Property Name="total" Type="Edm.Double" Nullable="true" />
+<Property Name="used" Type="Edm.Double" Nullable="true" />
+<Property Name="used_percent" Type="Edm.Double" Nullable="true" />
+<Property Name="device" Type="Edm.String" Nullable="true" />
+<Property Name="fstype" Type="Edm.String" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" />
+<Property Name="mode" Type="Edm.String" Nullable="true" />
+<Property Name="path" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__diskio"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="io_time" Type="Edm.Double" Nullable="true" />
+<Property Name="iops_in_progress" Type="Edm.Double" Nullable="true" />
+<Property Name="read_bytes" Type="Edm.Double" Nullable="true" />
+<Property Name="read_time" Type="Edm.Double" Nullable="true" />
+<Property Name="reads" Type="Edm.Double" Nullable="true" />
+<Property Name="weighted_io_time" Type="Edm.Double" Nullable="true" />
+<Property Name="write_bytes" Type="Edm.Double" Nullable="true" />
+<Property Name="write_time" Type="Edm.Double" Nullable="true" />
+<Property Name="writes" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" />
+<Property Name="name" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__mem"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="active" Type="Edm.Double" Nullable="true" />
+<Property Name="available" Type="Edm.Double" Nullable="true" />
+<Property Name="available_percent" Type="Edm.Double" Nullable="true" />
+<Property Name="buffered" Type="Edm.Double" Nullable="true" />
+<Property Name="cached" Type="Edm.Double" Nullable="true" />
+<Property Name="commit_limit" Type="Edm.Double" Nullable="true" />
+<Property Name="committed_as" Type="Edm.Double" Nullable="true" />
+<Property Name="dirty" Type="Edm.Double" Nullable="true" />
+<Property Name="free" Type="Edm.Double" Nullable="true" />
+<Property Name="high_free" Type="Edm.Double" Nullable="true" />
+<Property Name="high_total" Type="Edm.Double" Nullable="true" />
+<Property Name="huge_page_size" Type="Edm.Double" Nullable="true" />
+<Property Name="huge_pages_free" Type="Edm.Double" Nullable="true" />
+<Property Name="huge_pages_total" Type="Edm.Double" Nullable="true" />
+<Property Name="inactive" Type="Edm.Double" Nullable="true" />
+<Property Name="low_free" Type="Edm.Double" Nullable="true" />
+<Property Name="low_total" Type="Edm.Double" Nullable="true" />
+<Property Name="mapped" Type="Edm.Double" Nullable="true" />
+<Property Name="page_tables" Type="Edm.Double" Nullable="true" />
+<Property Name="shared" Type="Edm.Double" Nullable="true" />
+<Property Name="slab" Type="Edm.Double" Nullable="true" />
+<Property Name="sreclaimable" Type="Edm.Double" Nullable="true" />
+<Property Name="sunreclaim" Type="Edm.Double" Nullable="true" />
+<Property Name="swap_cached" Type="Edm.Double" Nullable="true" />
+<Property Name="swap_free" Type="Edm.Double" Nullable="true" />
+<Property Name="swap_total" Type="Edm.Double" Nullable="true" />
+<Property Name="total" Type="Edm.Double" Nullable="true" />
+<Property Name="used" Type="Edm.Double" Nullable="true" />
+<Property Name="used_percent" Type="Edm.Double" Nullable="true" />
+<Property Name="vmalloc_chunk" Type="Edm.Double" Nullable="true" />
+<Property Name="vmalloc_total" Type="Edm.Double" Nullable="true" />
+<Property Name="vmalloc_used" Type="Edm.Double" Nullable="true" />
+<Property Name="wired" Type="Edm.Double" Nullable="true" />
+<Property Name="write_back" Type="Edm.Double" Nullable="true" />
+<Property Name="write_back_tmp" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__net"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="bytes_recv" Type="Edm.Double" Nullable="true" />
+<Property Name="bytes_sent" Type="Edm.Double" Nullable="true" />
+<Property Name="drop_in" Type="Edm.Double" Nullable="true" />
+<Property Name="drop_out" Type="Edm.Double" Nullable="true" />
+<Property Name="err_in" Type="Edm.Double" Nullable="true" />
+<Property Name="err_out" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inaddrmaskreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inaddrmasks" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_incsumerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_indestunreachs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inechoreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inechos" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inmsgs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inparmprobs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_inredirects" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_insrcquenchs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_intimeexcds" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_intimestampreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_intimestamps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outaddrmaskreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outaddrmasks" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outdestunreachs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outechoreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outechos" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outmsgs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outparmprobs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outredirects" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outsrcquenchs" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outtimeexcds" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outtimestampreps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmp_outtimestamps" Type="Edm.Double" Nullable="true" />
+<Property Name="icmpmsg_intype0" Type="Edm.Double" Nullable="true" />
+<Property Name="icmpmsg_intype11" Type="Edm.Double" Nullable="true" />
+<Property Name="icmpmsg_intype3" Type="Edm.Double" Nullable="true" />
+<Property Name="icmpmsg_outtype3" Type="Edm.Double" Nullable="true" />
+<Property Name="icmpmsg_outtype8" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_defaultttl" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_forwarding" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_forwdatagrams" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_fragcreates" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_fragfails" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_fragoks" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_inaddrerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_indelivers" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_indiscards" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_inhdrerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_inreceives" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_inunknownprotos" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_outdiscards" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_outnoroutes" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_outrequests" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_reasmfails" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_reasmoks" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_reasmreqds" Type="Edm.Double" Nullable="true" />
+<Property Name="ip_reasmtimeout" Type="Edm.Double" Nullable="true" />
+<Property Name="packets_recv" Type="Edm.Double" Nullable="true" />
+<Property Name="packets_sent" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_activeopens" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_attemptfails" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_currestab" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_estabresets" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_incsumerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_inerrs" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_insegs" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_maxconn" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_outrsts" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_outsegs" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_passiveopens" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_retranssegs" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_rtoalgorithm" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_rtomax" Type="Edm.Double" Nullable="true" />
+<Property Name="tcp_rtomin" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_ignoredmulti" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_incsumerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_indatagrams" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_inerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_noports" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_outdatagrams" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_rcvbuferrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udp_sndbuferrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_ignoredmulti" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_incsumerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_indatagrams" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_inerrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_noports" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_outdatagrams" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_rcvbuferrors" Type="Edm.Double" Nullable="true" />
+<Property Name="udplite_sndbuferrors" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" />
+<Property Name="interface" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__processes"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="blocked" Type="Edm.Double" Nullable="true" />
+<Property Name="dead" Type="Edm.Double" Nullable="true" />
+<Property Name="idle" Type="Edm.Double" Nullable="true" />
+<Property Name="paging" Type="Edm.Double" Nullable="true" />
+<Property Name="running" Type="Edm.Double" Nullable="true" />
+<Property Name="sleeping" Type="Edm.Double" Nullable="true" />
+<Property Name="stopped" Type="Edm.Double" Nullable="true" />
+<Property Name="total" Type="Edm.Double" Nullable="true" />
+<Property Name="total_threads" Type="Edm.Double" Nullable="true" />
+<Property Name="unknown" Type="Edm.Double" Nullable="true" />
+<Property Name="zombies" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__swap"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="free" Type="Edm.Double" Nullable="true" />
+<Property Name="in" Type="Edm.Double" Nullable="true" />
+<Property Name="out" Type="Edm.Double" Nullable="true" />
+<Property Name="total" Type="Edm.Double" Nullable="true" />
+<Property Name="used" Type="Edm.Double" Nullable="true" />
+<Property Name="used_percent" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" /></EntityType>
+<EntityType Name="monitoring__system"><Key><PropertyRef Name="timestamp" /></Key><Property Name="timestamp" Type="Edm.DateTime" Precision="6" Nullable="false" />
+<Property Name="load1" Type="Edm.Double" Nullable="true" />
+<Property Name="load15" Type="Edm.Double" Nullable="true" />
+<Property Name="load5" Type="Edm.Double" Nullable="true" />
+<Property Name="n_cpus" Type="Edm.Double" Nullable="true" />
+<Property Name="n_users" Type="Edm.Double" Nullable="true" />
+<Property Name="uptime" Type="Edm.Double" Nullable="true" />
+<Property Name="uptime_format" Type="Edm.Double" Nullable="true" />
+<Property Name="host" Type="Edm.String" Nullable="true" /></EntityType>
+    
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

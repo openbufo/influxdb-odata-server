@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+# Zappa/Lambda/Serverless specific
+zappa_settings.json
+/serverless
+production.conf
+
 # Distribution / packaging
 .Python
 build/
