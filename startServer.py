@@ -4,11 +4,7 @@ from configparser import ConfigParser
 from werkzeug.wrappers import AuthorizationMixin, BaseRequest, Response
 from werkzeug.routing import Map, Rule, NotFound, RequestRedirect
 from local_store import local, local_manager
-import boto3
-import hmac
-import hashlib
-import base64
-from urllib.parse import unquote_plus
+from importlib import import_module
 import traceback
 
 import pyslet.odata2.metadata as edmx
@@ -57,7 +53,7 @@ def prepareSchemaMetadata(req, bucket_name):
         return '400 Bad Request', [str.encode(err_msg)]
 
 url_map = Map([
-    Rule('/dev/createmetadata/<bucket_name>', endpoint='prepareSchemaMetadata')
+    Rule('/configure/createmetadata/<bucket_name>', endpoint='prepareSchemaMetadata')
 ])
 views = {'prepareSchemaMetadata': prepareSchemaMetadata}
 
@@ -80,49 +76,39 @@ class prepareHTTPProxy(object):
         start_response(status,  [('Content-Type', 'text/plain')])
         return res
 
-
 class Auth():
-    def __init__(self, app, cognito_credentials):
+    def __init__(self, app, auth_config):
         self._app = app
-        cognito_credentials = dict(cognito_credentials)
-        try:
-            self.USER_POOL_ID = cognito_credentials['user_pool_id']
-            self.CLIENT_ID = cognito_credentials['client_id']
-            self.CLIENT_SECRET = cognito_credentials['client_secret']
-        except:
-            # Couldn't find cognito credentials
-            logging.error("Missing AWS congnito credentials in configuration")
 
-        self.awscognito_client = boto3.client('cognito-idp')
+        self.auth_method_function_mapping = {'basic_http' : '_basicHTTPAuthenticated'}
+
+        self.auth_method = auth_config['method']
+        if self.auth_method not in self.auth_method_function_mapping.keys():
+            logger.exception("Authentication method '{}' not supported in this version. Allowed authentication "
+                             "methods are {}".format(auth_config['method'], str(list(self.auth_method_function_mapping.keys()))))
+            raise ValueError()
+
+        try:
+            auth_module = import_module('authentication.{}'.format(auth_config['validator']))
+            logger.info("Initialising authentication service using with '{}' as validator and {} as authentication method"
+                        .format(auth_config['validator'], self.auth_method))
+            self.authentication_client =  getattr(auth_module, 'authentication')(auth_config)
+        except (ImportError, AttributeError) as e:
+            logger.exception("Failed to configure authentication module. Make sure validator and method are valid "
+                             "in authentication section of the configuation")
+            raise ImportError()
 
     def __call__(self, environ, start_response):
-        # AWS API Gateway quotes URLs with urllb.quote_plus function
-        # Hence, spaces are replaced with '+' and special chars are escaped.
-        # Pyslet accepts '%20' instead of '+'. Thus, query_string is modified accordingly
-        query_string = environ['QUERY_STRING']
-        environ.update({"QUERY_STRING": unquote_plus(query_string).replace(' ', '%20')})
-
         # supports HTTP basic auth and header based authentication
         http_auth_header = environ.get('HTTP_AUTHORIZATION', None)
         if http_auth_header is not None:
-            if self._basicHTTPAuthenticated(http_auth_header):
+            # if self._basicHTTPAuthenticated(http_auth_header):
+            if getattr(self, self.auth_method_function_mapping[self.auth_method])(http_auth_header):
                 return self._app(environ, start_response)
             return self._failed(environ, start_response)
         else:
             # no http_authorization reader found
             return self._failed(environ, start_response)
-
-    """
-    def _authenticated(self, header):
-        if not header:
-            return False
-        username = header.get("username", None)
-        password = header.get("password", None)
-        if username is None or password is None:
-            return False
-        return self.awscognito_auth(username, password)
-
-    """
 
     def _basicHTTPAuthenticated(self, header):
         # for basic HTTP authorization
@@ -132,41 +118,13 @@ class Auth():
         _, encoded = header.split(None, 1)
         decoded = b64decode(encoded).decode('UTF-8')
         username, password = decoded.split(':', 1)
-        return self.awscognito_auth(username, password)
+        return self.authentication_client.password_verify(username, password) #self.awscognito_auth(username, password)
 
     def _failed(self, environ, start_response):
         start_response('401 Authentication Required',
                        [('Content-Type', 'text/plain'),
                         ('WWW-Authenticate', 'Basic realm="Login"')])
-        return ['Authentication error. Make sure username and password are correct.']
-
-    def get_secret_hash(self, username):
-        msg = username + self.CLIENT_ID
-        dig = hmac.new(str(self.CLIENT_SECRET).encode('utf-8'),
-                       msg=str(msg).encode('utf-8'), digestmod=hashlib.sha256).digest()
-        d2 = base64.b64encode(dig).decode()
-        return d2
-
-    def awscognito_auth(self, username, password):
-        secret_hash = self.get_secret_hash(username)
-        try:
-            resp = self.awscognito_client.admin_initiate_auth(
-                UserPoolId=self.USER_POOL_ID,
-                ClientId=self.CLIENT_ID,
-                AuthFlow='ADMIN_NO_SRP_AUTH',
-                AuthParameters={
-                    'USERNAME': username,
-                    'SECRET_HASH': secret_hash,
-                    'PASSWORD': password,
-                },
-                ClientMetadata={
-                    'username': username,
-                    'password': password, })
-        except self.awscognito_client.exceptions.NotAuthorizedException or self.awscognito_client.exceptions.UserNotConfirmedException:
-            return False
-        except Exception as e:
-            return False
-        return True
+        yield b'Authentication error. Make sure username/password or tokens are correct'
 
 
 def load_metadata(config):
@@ -216,8 +174,8 @@ if __name__ == "__main__":
     app = local_manager.make_middleware(app)
 
     if c.getboolean('authentication', 'required'):
-        cognito_credentials = c._sections["authentication"]
-        app = Auth(app, cognito_credentials)
+        auth_config = c._sections["authentication"]
+        app = Auth(app, auth_config)
 
     from werkzeug.serving import run_simple
     listen_interface = c.get('server', 'server_listen_interface')
