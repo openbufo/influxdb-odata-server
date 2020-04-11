@@ -20,7 +20,7 @@ logger = logging.getLogger("odata-influxdb")
 logger.addHandler(logHandler)
 logger.setLevel(logging.DEBUG)
 
-config_file = "production.conf"
+config_file = "settings.conf"
 
 def get_config(config):
     c = ConfigParser(allow_no_value=True)
