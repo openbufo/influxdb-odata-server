@@ -19,6 +19,7 @@ class authentication():
         except:
             # Couldn't find credentials
             logging.error("Missing user credentials in configuration")
+            raise ValueError
 
     def password_verify(self, username, password):
         # Authentication based on username & password

@@ -25,6 +25,7 @@ class authentication():
         except:
             # Couldn't find cognito credentials
             logging.error("Missing AWS congnito credentials in configuration")
+            return ValueError
         self.awscognito_client = boto3.client('cognito-idp')
 
     def get_secret_hash(self, username):
