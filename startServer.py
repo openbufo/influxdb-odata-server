@@ -1,11 +1,10 @@
 import logging
 import sys
 from configparser import ConfigParser
-from werkzeug.wrappers import AuthorizationMixin, BaseRequest, Response
-from werkzeug.routing import Map, Rule, NotFound, RequestRedirect
 from local_store import local, local_manager
 from importlib import import_module
 import traceback
+import argparse
 
 import pyslet.odata2.metadata as edmx
 from pyslet.odata2.server import ReadOnlyServer
@@ -20,8 +19,6 @@ logger = logging.getLogger("odata-influxdb")
 logger.addHandler(logHandler)
 logger.setLevel(logging.DEBUG)
 
-config_file = "settings.conf"
-
 def get_config(config):
     c = ConfigParser(allow_no_value=True)
     with open(config, 'r') as fp:
@@ -29,52 +26,6 @@ def get_config(config):
         c.read_file(fp)
     return c
 
-def prepareSchemaMetadata(req, bucket_name):
-    try:
-        config = get_config(config_file)
-        metadata_filename = config.get('metadata', 'metadata_file')
-        logger.info("Generating OData metadata xml file from InfluxDB metadata")
-        influxdb_version = config.getint('metadata', 'influxdb_version')
-        if influxdb_version == 2:
-            from influxdbmeta_v2 import generate_metadata
-            metadata = generate_metadata(connection=config._sections['influxdb2'], bucket=bucket_name)
-        else:
-            from influxdbmeta import generate_metadata
-            dsn = config.get('influxdb', 'dsn')
-            metadata = generate_metadata(dsn)
-
-        with open(metadata_filename, 'w') as f:
-                f.write(metadata)
-        success_msg = "Successfully created Odata provider metadata for bucket '{}' at {}".format(str(bucket_name), metadata_filename)
-        return '200 OK', [str.encode(metadata)]
-    except Exception as e:
-        traceback.print_exc()
-        err_msg = "Failed to create Odata provider metadata for bucket '{}' due to following error : {}".format(str(bucket_name), str(e))
-        return '400 Bad Request', [str.encode(err_msg)]
-
-url_map = Map([
-    Rule('/configure/createmetadata/<bucket_name>', endpoint='prepareSchemaMetadata')
-])
-views = {'prepareSchemaMetadata': prepareSchemaMetadata}
-
-class Request(BaseRequest, AuthorizationMixin):
-    pass
-
-
-class prepareHTTPProxy(object):
-    def __init__(self, app):
-        self.wrapped = app
-
-    def __call__(self, environ, start_response):
-        local.request = req = Request(environ)
-        urls = url_map.bind_to_environ(environ)
-        try:
-            endpoint, args = urls.match()
-        except Exception as e:
-            return self.wrapped(environ, start_response)
-        status, res = urls.dispatch(lambda e, v: views[e](req, **v),catch_http_exceptions=True)
-        start_response(status,  [('Content-Type', 'text/plain')])
-        return res
 
 class Auth():
     def __init__(self, app, auth_config):
@@ -152,6 +103,26 @@ def load_metadata(config):
 
     return doc
 
+def createSchemaMetadata(config):
+    try:
+        metadata_filename = config.get('metadata', 'metadata_file')
+        logger.info("Generating OData metadata xml file from InfluxDB metadata")
+        influxdb_version = config.getint('metadata', 'influxdb_version')
+        if influxdb_version == 2:
+            from influxdbmeta_v2 import generate_metadata
+            metadata = generate_metadata(connection=config._sections['influxdb2'])
+        else:
+            from influxdbmeta import generate_metadata
+            metadata = generate_metadata(connection=config._sections['influxdb'])
+
+        with open(metadata_filename, 'w') as f:
+                f.write(metadata)
+        logger.info("Successfully created Odata provider metadata at {}".format(metadata_filename))
+        return True
+    except Exception as e:
+        traceback.print_exc()
+        logger.exception("Failed to create Odata provider metadata due to following error : {}".format(str(e)))
+        return False
 
 def configure_app(c, doc):
     service_root = c.get('server', 'service_advertise_root')
@@ -162,15 +133,29 @@ def configure_app(c, doc):
 
 
 if __name__ == "__main__":
+    """read config and start odata api server"""
+    # parse arguments
+    p = argparse.ArgumentParser(description='Odata sevice provider for InfluxDB')
+    p.add_argument('-c', '--config',
+                   help='specify a conf file (default=settings.conf)',
+                   default='settings.conf')
+    p.add_argument('-m', '--createmetadata',
+                   help='generates xml metadata metadata.conf in your current directory (does not start server)',
+                   action="store_true")
+    args = p.parse_args()
+
     # parse config file
-    c = get_config(config_file)    # args.config
+    c = get_config(args.config)    # args.config
+
+    if args.createmetadata:
+        createSchemaMetadata(c)
+        sys.exit()
 
     # generate and load metadata
     doc = load_metadata(c)
 
     # start server
     app = configure_app(c, doc)
-    app = prepareHTTPProxy(app)
     app = local_manager.make_middleware(app)
 
     if c.getboolean('authentication', 'required'):

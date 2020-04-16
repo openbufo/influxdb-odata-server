@@ -10,6 +10,7 @@ __pycache__/
 zappa_settings.json
 /serverless
 production.conf
+metadata_demo.xml
 
 # Distribution / packaging
 .Python

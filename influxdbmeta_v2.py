@@ -53,7 +53,7 @@ def mangle_field_name(field_name):
     return field_name.replace(' ', '__')
 
 class InfluxDB(object):
-    def __init__(self, connection, bucket):
+    def __init__(self, connection):
         self.min_timerange = '90d'
         try:
             self.client = InfluxDBClient(url=connection['url'], token=connection['token'], org=connection["org"])
@@ -61,12 +61,16 @@ class InfluxDB(object):
         except Exception as e:
             print("Failed to connect to initialize Influx Odata container")
             print(str(e))
-        if isinstance(bucket, str):
-            self.buckets = bucket.split(',')
-        elif not isinstance(bucket, list):
-            pass
-        else:
-            self.buckets = bucket
+            raise ConnectionError()
+        try:
+            bucket = connection['bucket']
+            if isinstance(bucket, str):
+                self.buckets = bucket.split(',')
+            else:
+                self.buckets = list()
+        except:
+            print("Bucket details not valid")
+            raise ValueError()
 
     def fields(self, bucket, measurement):
         """returns a tuple of dicts where each dict has attributes (name, type, edm_type)"""
@@ -176,13 +180,9 @@ def entity_sets_and_types(db):
     return entity_sets, entity_types
 
 
-def generate_metadata(connection, bucket):
+def generate_metadata(connection):
     """connect to influxdb, read the structure, and return an edmx xml file string"""
-    if isinstance(bucket, str):
-        bucket = bucket.split(',')
-    if not isinstance(bucket, list):
-        return "error"
-    i = InfluxDB(connection, bucket)
+    i = InfluxDB(connection)
     entity_sets, entity_types = entity_sets_and_types(i)
     output = """{}
     <EntityContainer Name="InfluxDB" m:IsDefaultEntityContainer="true">

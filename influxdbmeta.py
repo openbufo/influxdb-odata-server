@@ -53,8 +53,28 @@ def db_name__measurement_name(db_name, m_name):
 
 
 class InfluxDB(object):
-    def __init__(self, dsn):
-        self.client = InfluxDBClient.from_dsn(dsn)
+    def __init__(self, config):
+        try:
+            dsn = config['dsn']
+            self.client = InfluxDBClient.from_dsn(dsn)
+        except Exception as e:
+            print("Failed to connect to InfluxDB")
+            print(str(e))
+            raise ConnectionError()
+
+        try:
+            databases = config['databases']
+            if databases is not None:
+                try:
+                    databases = databases.split(',')
+                except:
+                    databases = list()
+            else:
+                databases = list()
+        except:
+            raise ValueError()
+
+        self.selected_databases = databases
 
     def fields(self, db_name):
         """returns a tuple of dicts where each dict has attributes (name, type, edm_type)"""
@@ -73,6 +93,8 @@ class InfluxDB(object):
     def measurements(self):
         measurements = []
         for db in self.databases:
+            if db[u'name'] not in self.selected_databases:
+                continue
             q = 'SHOW MEASUREMENTS'
             rs = self.client.query(q, database=db[u'name'])
 
@@ -125,9 +147,9 @@ def entity_sets_and_types(db):
     return entity_sets, entity_types
 
 
-def generate_metadata(dsn):
+def generate_metadata(connection):
     """connect to influxdb, read the structure, and return an edmx xml file string"""
-    i = InfluxDB(dsn)
+    i = InfluxDB(connection)
     entity_sets, entity_types = entity_sets_and_types(i)
     output = """{}
     <EntityContainer Name="InfluxDB" m:IsDefaultEntityContainer="true">
