@@ -50,7 +50,7 @@ def bucket_name__measurement_name(bucket_name, m_name):
         mangle_measurement_name(m_name)
     )
 def mangle_field_name(field_name):
-    return field_name.replace(' ', '__')
+    return field_name.replace(' ', '_sp_').replace('.', '_dot_')
 
 class InfluxDB(object):
     def __init__(self, connection):
