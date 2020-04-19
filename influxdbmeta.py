@@ -51,6 +51,9 @@ def db_name__measurement_name(db_name, m_name):
         mangle_measurement_name(m_name)
     )
 
+def mangle_field_name(field_name):
+    return field_name.replace(' ', '_sp_').replace('.','_dot_')
+
 
 class InfluxDB(object):
     def __init__(self, config):
@@ -83,7 +86,7 @@ class InfluxDB(object):
         # expand and deduplicate
         fields = set(tuple(f.items()) for f in chain(*chain(fields_rs, tags_rs)))
         fields = (dict(
-            name=f[0][1],
+            name=mangle_field_name(f[0][1]),
             type='string' if len(f)==1 else f[1][1],
             edm_type=get_edm_type('string' if len(f)==1 else f[1][1])
         ) for f in fields)
