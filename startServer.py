@@ -1,7 +1,8 @@
 import logging
 import sys
 from configparser import ConfigParser
-from local_store import local, local_manager
+from werkzeug.wrappers import AuthorizationMixin, BaseRequest
+from local import local, local_manager
 from importlib import import_module
 import traceback
 import argparse
@@ -19,12 +20,24 @@ logger = logging.getLogger("odata-influxdb")
 logger.addHandler(logHandler)
 logger.setLevel(logging.DEBUG)
 
+class Request(BaseRequest, AuthorizationMixin):
+    pass
+
 def get_config(config):
     c = ConfigParser(allow_no_value=True)
     with open(config, 'r') as fp:
         #c = get_sample_config()
         c.read_file(fp)
     return c
+
+
+class prepareHTTPProxy(object):
+    def __init__(self, app):
+        self.wrapped = app
+
+    def __call__(self, environ, start_response):
+        local.request = req = Request(environ)
+        return self.wrapped(environ, start_response)
 
 
 class Auth():
@@ -156,6 +169,7 @@ if __name__ == "__main__":
 
     # start server
     app = configure_app(c, doc)
+    app = prepareHTTPProxy(app)
     app = local_manager.make_middleware(app)
 
     if c.getboolean('authentication', 'required'):
