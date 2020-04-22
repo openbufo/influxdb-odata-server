@@ -1,9 +1,7 @@
 import datetime
 import numbers
 import logging
-import sys
 import influxdb
-#from functools32 import lru_cache
 from pyslet.iso8601 import TimePoint
 import pyslet.rfc2396 as uri
 from pyslet.odata2.core import EntityCollection, CommonExpression, PropertyExpression, BinaryExpression, \
@@ -85,6 +83,10 @@ def unmangle_entity_set_name(name):
     m_name = unmangle_measurement_name(m_name)
     return db_name, m_name
 
+def unmangle_field_name(field_name):
+    return field_name
+    return field_name.replace('_sp_', ' ').replace('_dot_','.').strip()
+
 
 def parse_influxdb_time(t_str):
     """
@@ -131,7 +133,7 @@ class InfluxDBMeasurement(EntityCollection):
         return max_count
 
     def __len__(self):
-        return self._query_len()
+        return self.topmax  # _query_len()
 
     def set_expand(self, expand, select=None):
         """Sets the expand and select query options for this collection.
@@ -216,21 +218,26 @@ class InfluxDBMeasurement(EntityCollection):
         #fields = get_tags_and_field_keys(self.container.client, self.measurement_name, self.db_name)
 
         for measurement_name, tag_set in result.keys():
+            if request and request.args.get('aggregate'):
+                influxdb_field_name_prefix = "{}_".format(request.args.get('aggregate'))
+            else:
+                influxdb_field_name_prefix = None
             for row in result[measurement_name, tag_set]:
                 e = self.new_entity()
                 t = parse_influxdb_time(row['time'])
                 e['timestamp'].set_from_value(t)
                 if self.select is None or '*' in self.select:
                     for influxdb_field_name, influxdb_field_value in row.items():
+                        # for aggregated queries, field name returned by InfluxQL are prefixed with "aggregated-func_"
+                        if influxdb_field_name_prefix is not None:
+                            influxdb_field_name = influxdb_field_name.replace(influxdb_field_name_prefix, '')
                         if influxdb_field_name == 'time':
                             continue  # time has already been set
                         try:
-                            entity_property = e[influxdb_field_name]
+                            entity_property = e[unmangle_field_name(influxdb_field_name)]
+                            entity_property.set_from_value(unmangle_field_name(influxdb_field_value))
                         except KeyError:
                             continue
-                            # assume aggregated field
-                            entity_property = e[self.non_aggregate_field_name(influxdb_field_name)]
-                        entity_property.set_from_value(influxdb_field_value)
                     if tag_set is not None:
                         for tag, value in tag_set.items():
                             e[tag].set_from_value(value)
@@ -238,9 +245,6 @@ class InfluxDBMeasurement(EntityCollection):
                     for odata_field_name in self.select:
                         if odata_field_name == 'timestamp':
                             continue  # time has already been set
-                        if request and request.args.get('aggregate'):
-                            e[odata_field_name].set_from_value(
-                                row[request.args.get('aggregate') + '_' + odata_field_name])
                         e[odata_field_name].set_from_value(row[odata_field_name])
                 e.exists = True
                 self.lastEntity = e
@@ -256,6 +260,7 @@ class InfluxDBMeasurement(EntityCollection):
                 field_format = u'{}({{0}}) as {{0}}'.format(aggregate_func)
 
         def select_key(spec_key):
+            spec_key = unmangle_field_name(spec_key)    # format field names
             if spec_key == u'*':
                 tmp = field_format.format(spec_key)
                 if u"as *" in tmp:
