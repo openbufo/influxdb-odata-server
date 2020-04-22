@@ -76,7 +76,7 @@ def unmangle_bucket_name(bucket):
 
 def unmangle_field_name(field_name):
     return field_name
-    return field_name.replace('__', ' ').strip()
+    return field_name.replace('_sp_', ' ').replace('_dot_','.').strip()
 
 def unmangle_entity_set_name(name):
     bucket, measurement = name.split('__', 1)
@@ -109,27 +109,6 @@ class InfluxDBMeasurement(EntityCollection):
         #self.bucket = "_measurement"
         self.topmax = getattr(self.container, '_topmax', 50)
         self.query_len = 10
-
-    #@lru_cache()
-    '''
-    def _query_len(self):
-        """influxdb only counts non-null values, so we return the count of the field with maximum non-null values"""
-        q = 'from(bucket: "{}") | > range({}| > count()'.format(
-            self.bucket,
-            self._where_expression()
-        ).strip()
-
-        logger.info('Querying InfluxDB: {}'.format(q))
-        rs = self.container.query_api.query(q)
-        #rs = self.container.client.query(q)
-        interval_list = list(rs.get_points())
-        if request and request.args.get('aggregate'):
-            max_count = len(interval_list)
-        else:
-            max_count = max(val for val in rs.get_points().__next__().values() if isinstance(val, numbers.Number))
-        self._influxdb_len = max_count
-        return max_count
-    '''
 
     def __len__(self):
         return self.topmax    # _query_len()
@@ -233,7 +212,7 @@ class InfluxDBMeasurement(EntityCollection):
                 e["timestamp"].set_from_value(t)
                 for field, value in record.items():
                     try:
-                        e[field.replace(' ', '__').strip()].set_from_value(value)
+                        e[unmangle_field_name(field)].set_from_value(value)
                     except:
                         # in case if field in query result doesn't exists in metadata schema, SKIP the field
                         continue

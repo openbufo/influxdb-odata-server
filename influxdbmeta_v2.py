@@ -54,7 +54,12 @@ def mangle_field_name(field_name):
 
 class InfluxDB(object):
     def __init__(self, connection):
-        self.min_timerange = '90d'
+        try:
+            timerange = int(connection['data_availability_timerange'])
+        except:
+            timerange = 30 # defaults
+        self.min_timerange = '{}d'.format(str(timerange))
+        print("Finding measurements with datapoints in last {} days".format(timerange))
         try:
             self.client = InfluxDBClient(url=connection['url'], token=connection['token'], org=connection["org"])
             self.query_api = self.client.query_api()
@@ -63,7 +68,7 @@ class InfluxDB(object):
             print(str(e))
             raise ConnectionError()
         try:
-            bucket = connection['bucket']
+            bucket = connection['buckets']
             if isinstance(bucket, str):
                 self.buckets = bucket.split(',')
             else:
