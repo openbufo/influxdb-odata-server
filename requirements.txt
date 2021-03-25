@@ -22,7 +22,7 @@ pyslet==0.7.20170805
 python-dateutil==2.6.1
 python-slugify==1.2.4
 pytz==2019.3
-PyYAML==5.3
+PyYAML==5.4
 requests==2.22.0
 responses==0.10.7
 Rx==3.1.0
