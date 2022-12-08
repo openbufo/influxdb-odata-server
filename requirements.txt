@@ -2,7 +2,7 @@ argcomplete==1.9.3
 aws-wsgi==0.2.4
 boto3==1.11.9
 botocore==1.14.9
-certifi==2019.11.28
+certifi==2022.12.7
 cfn-flip==1.2.2
 chardet==3.0.4
 ciso8601==2.1.3
